@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html, body { background: #7e7e7e; margin: 0; height: 100%; }
+        * { margin: 0; overflow: hidden; }
+        #canvas { width: 100%; height: 100%; }
+        h4 {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            font-size: 18px;
+            font-weight: 400;
+            text-shadow: 0 0 5px rgba(155, 0, 255, 0.8);
+            background: rgba(20, 20, 20, 0.9);
+            padding: 10px 15px;
+            border-radius: 8px;
+            z-index: 10;
+        }
+        h4:nth-child(2) { top: 60px; }
+        h4:nth-child(3) { top: 110px; }
+        h4 span { color: #9b00ff; font-weight: 600; }
+        body, #canvas {
+            cursor: none; /* Ukrywa domyślny kursor */
+        }
+        #titles-list {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(20, 20, 20, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            z-index: 10;
+            max-width: 200px;
+        }
+        #titles-list h5 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #9b00ff;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #titles-list h5::after {
+            content: '▼';
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+        #titles-list h5.active::after {
+            transform: rotate(180deg);
+        }
+        #titles-list ul {
+            list-style: none;
+            padding: 0;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+        }
+        #titles-list ul.active {
+            max-height: 200px;
+            opacity: 1;
+        }
+        #titles-list li {
+            font-size: 14px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 5px rgba(155, 0, 255, 0.8);
+        }
+        #letterR {
+            position: absolute;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(155, 0, 255, 0.8);
+            pointer-events: none;
+            z-index: 10;
+            transform: translate(-10%, -20%);
+        }
+        #flowerButton {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 30px;
+            font-size: 18px;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            background: rgba(155, 0, 255, 0.8);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 15;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            transition: background 0.3s;
+        }
+        #flowerButton:hover {
+            background: rgba(155, 0, 255, 1);
+     
+        }
+        #Button2 {
+            position: absolute;
+            top: 56%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 8px 15px;
+            font-size: 18px;
+            font-family: 'Arial', sans-serif;
+            color: #0000;
+            background: #fd4556;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 15;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+            transition: background 0.3s;
+        }
+        #Button2:hover {
+            background: rgba(155, 0, 255, 1);
+        }
+        #popup {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(20, 20, 20, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 20;
+            box-shadow: 0 0 15px rgba(155, 0, 255, 0.8);
+        }
+        #popup img {
+            max-width: 60vw; /* 60% szerokości strony */
+            max-height: 80vh; /* Ograniczenie wysokości dla dużych ekranów */
+            width: auto;
+            height: auto;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        #namesContainer {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #namesContainer:hover {
+            opacity: 1;
+        }
+        .nameText {
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(155, 0, 255, 0.8);
+            background: rgba(20, 20, 20, 0.9);
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 5px 0;
+            cursor: none;
+            text-align: center;
+        }
+        /* Loading screen styles */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        #loading-screen img {
+            max-width: 300px;
+            max-height: 300px;
+            width: auto;
+            height: auto;
+        }
+        #loading-screen p {
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        #main-content {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <img src="loading.gif" alt="Jett Loading GIF">
+        <p>Dla *PRAWIE* najlepszej Jett...</p>
+    </div>
+    <div id="main-content">
+        <h4>Tyle minęło czasu od naszego poznania się: <span id="czas"></span></h4>
+        <h4>Tyle minęło czasu od naszego <span>prawdziwego</span> poznania się: <span id="czas2"></span></h4>
+        <h4>Tyle czasu zostało do końca relacji: <span>∞</span></h4>
+        <div id="titles-list">
+            <h5>FILMY/SERIALE</h5>
+            <ul>
+                <li>[1]: Arcane (Sezon 1)</li>
+                <li>[2]: Arcane (Sezon 2)</li>
+                <li>[3]: Duma i Uprzedzenie</li>
+                <li>[4]: A Silent Voice</li>
+                <li>[5]: Pamiętnik</li>
+            </ul>
+        </div>
+        <button id="flowerButton">KLIKNIJ MNIE!</button>
+        <div id="popup">
+            <img src="bzy.jpg" alt="Kwiat" id="popupImage">
+        </div>
+        <div>
+            <a href="strona2.html">
+        <button  id="Button2">VALORANT</button>
+</a>
+        </div>
+
+
+        <div id="namesContainer">
+            <div class="nameText">by Sebastian S.</div>
+            <div class="nameText">for Rozalia G.</div>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        // Loading screen logic
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+            }, 3000);
+        });
+
+        function zegar2() {
+            let teraz = new Date().getTime();
+            let dzien = new Date(2025, 0, 2, 3, 0, 0).getTime();
+            let sekund = Math.abs((teraz - dzien) / 1000);
+            let minut = Math.floor(sekund / 60);
+            let godzin = Math.floor(minut / 60);
+            let dni = Math.floor(godzin / 24);
+            let lat = Math.floor(dni / 365);
+            sekund = Math.floor(sekund - minut * 60);
+            minut = Math.floor(minut - godzin * 60);
+            godzin = Math.floor(godzin - dni * 24);
+            dni = Math.floor(dni - lat * 365);
+            let roznica = dni + " dni " + godzin + " godzin " +
+                ((minut < 10) ? ":0" : "") + minut + " minut " +
+                ((sekund < 10) ? ":0" : "") + sekund + " sekund";
+            document.getElementById('czas').innerHTML = roznica;
+            setTimeout(zegar2, 1000);
+        }
+        zegar2();
+
+        function zegar3() {
+            let teraz = new Date().getTime();
+            let dzien = new Date(2024, 2, 19, 14, 30, 0).getTime();
+            let sekund = Math.abs((teraz - dzien) / 1000);
+            let minut = Math.floor(sekund / 60);
+            let godzin = Math.floor(minut / 60);
+            let dni = Math.floor(godzin / 24);
+            let lat = Math.floor(dni / 365);
+            sekund = Math.floor(sekund - minut * 60);
+            minut = Math.floor(minut - godzin * 60);
+            godzin = Math.floor(godzin - dni * 24);
+            dni = Math.floor(dni - lat * 365);
+            let roznica = dni + " dni " + godzin + " godzin " +
+                ((minut < 10) ? "0" : "") + minut + " minut " +
+                ((sekund < 10) ? "0" : "") + sekund + " sekund";
+            document.getElementById('czas2').innerHTML = roznica;
+            setTimeout(zegar3, 1000);
+        }
+        zegar3();
+
+        let range = n => Array.from(Array(n).keys());
+
+        class Vector {
+            constructor(x = 0, y = 0) {
+                this.x = x;
+                this.y = y;
+            }
+            reflect() {
+                return new Vector(-this.x, -this.y);
+            }
+            add(vector) {
+                return new Vector(this.x + vector.x, this.y + vector.y);
+            }
+            subtract(vector) {
+                return new Vector(this.x - vector.x, this.y - vector.y);
+            }
+            scale(scalar = 1) {
+                return new Vector(this.x * scalar, this.y * scalar);
+            }
+            length() {
+                return Math.sqrt(this.x * this.x + this.y * this.y);
+            }
+            distance(vector) {
+                let dx = this.x - vector.x;
+                let dy = this.y - vector.y;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+        }
+
+        class IO {
+            constructor() {
+                this.mouse = new Vector();
+                this.bindMouse();
+            }
+            bindMouse() {
+                window.addEventListener('mousemove', ({ x, y }) => {
+                    this.mouse.x = x;
+                    this.mouse.y = y;
+                });
+            }
+        }
+
+        class Point {
+            constructor({ position = new Vector(), color = '#f00', size = 3 }) {
+                this.position = position;
+                this.color = color;
+                this.size = size;
+            }
+            render(ctx) {
+                ctx.beginPath();
+                ctx.fillStyle = this.color;
+                ctx.arc(this.position.x, this.position.y, this.size, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
+        class SpringPoint extends Point {
+            constructor({ target = new Vector(), elasticity = 1e-1, color = 'rgba(255, 0, 0, .6)', size = 3, damping = 1e-1 }) {
+                super({ position: target, color, size });
+                this.velocity = new Vector();
+                this.target = target;
+                this.elasticity = elasticity;
+                this.damping = damping;
+            }
+            updateVelocity() {
+                let damping = this.velocity.scale(this.damping);
+                let force = this.target
+                    .subtract(this.position)
+                    .scale(this.elasticity)
+                    .subtract(damping);
+                this.velocity = this.velocity.add(force);
+            }
+            updatePosition() {
+                this.position = this.position.add(this.velocity);
+            }
+            update() {
+                this.updatePosition();
+                this.updateVelocity();
+            }
+        }
+
+        class SpringTrail extends SpringPoint {
+            constructor(config) {
+                super(config);
+                this.trail = range(config.trailSize || 10).map(index => {
+                    config.target = this.position;
+                    config.elasticity = 1 / (index * 8);
+                    config.damping = 8 / (index * 10 + 5);
+                    return new SpringPoint(config);
+                });
+            }
+            update() {
+                super.update();
+                this.trail.forEach(point => point.update());
+            }
+            render(ctx) {
+                super.render(ctx);
+                this.trail.forEach(point => point.render(ctx));
+            }
+        }
+
+        class Flower {
+            constructor({ position = new Vector(), velocity = new Vector(), size = 10, color = 'rgba(255, 105, 180, 0.8)', lifetime = 100, rotation = 0 }) {
+                this.position = position;
+                this.velocity = velocity;
+                this.size = size;
+                this.color = color;
+                this.lifetime = lifetime;
+                this.age = 0;
+                this.rotation = rotation;
+                this.rotationSpeed = random(-0.05, 0.05);
+            }
+            update() {
+                this.position = this.position.add(this.velocity);
+                this.velocity = this.velocity.scale(0.98);
+                this.age++;
+                this.rotation += this.rotationSpeed;
+                this.color = `rgba(255, 105, 180, ${1 - this.age / this.lifetime})`;
+            }
+            render(ctx) {
+                ctx.save();
+                ctx.translate(this.position.x, this.position.y);
+                ctx.rotate(this.rotation);
+                ctx.fillStyle = this.color;
+                for (let i = 0; i < 8; i++) {
+                    ctx.beginPath();
+                    ctx.ellipse(0, this.size * 0.5, this.size * 0.3, this.size * 0.6, i * Math.PI / 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.closePath();
+                }
+                ctx.beginPath();
+                ctx.fillStyle = `rgba(255, 255, 0, ${1 - this.age / this.lifetime})`;
+                ctx.arc(0, 0, this.size * 0.3, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.closePath();
+                ctx.restore();
+            }
+            isAlive() {
+                return this.age < this.lifetime;
+            }
+        }
+
+        class Physics {
+            update(objects) {
+                objects.forEach(object => object.update());
+            }
+        }
+
+        class Renderer {
+            constructor(ctx, size = { width: 100, height: 100 }) {
+                this.ctx = ctx;
+                this.size = size;
+            }
+            render(objects) {
+                objects.forEach(object => object.render(ctx));
+            }
+            clear() {
+                this.ctx.fillStyle = 'rgba(20, 20, 20, .2)';
+                this.ctx.fillRect(0, 0, this.size.width, this.size.height);
+            }
+        }
+
+        class Engine {
+            constructor(physics, renderer, objects = []) {
+                this.physics = physics;
+                this.renderer = renderer;
+                this.objects = objects;
+            }
+            add(...objects) {
+                this.objects = this.objects.concat(objects);
+            }
+            tick() {
+                this.physics.update(this.objects);
+                this.objects = this.objects.filter(obj => !(obj instanceof Flower) || obj.isAlive());
+            }
+            render() {
+                this.renderer.render(this.objects);
+            }
+            clear() {
+                this.renderer.clear();
+            }
+        }
+
+        let canvas = document.getElementById('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let ctx = canvas.getContext('2d');
+
+        let io = new IO();
+        let engine = new Engine(
+            new Physics(),
+            new Renderer(ctx, { width: canvas.width, height: canvas.height })
+        );
+
+        let origin = new Vector(canvas.width / 2, canvas.height / 2);
+
+        let polar = (rad, time) => {
+            rad += Math.sin(time / 100);
+            let x = 16 * Math.sin(rad) ** 3;
+            let y = 13 * Math.cos(rad) - 5 * Math.cos(2 * rad) - 2 * Math.cos(3 * rad) - Math.cos(4 * rad);
+            let scale = (Math.sin(time / 10) + 3) * 4;
+            return new Vector(x * scale, -y * scale)
+                .add(origin.add(io.mouse.subtract(origin).scale(0.5)));
+        };
+
+        let random = (min = 0, max = 1) => Math.random() * (max - min) + min;
+
+        let targetsSize = 60;
+        let targets = [];
+        for (let i = 0; i < targetsSize; i++) {
+            let target = new Vector(random(0, canvas.width), random(0, canvas.height));
+            engine.add(new SpringTrail({ target: target, size: 1.3, trailSize: 10, color: "rgba(155, 0, 255, 1)" }));
+            targets.push(target);
+        }
+
+        let button = document.getElementById('flowerButton');
+        let popup = document.getElementById('popup');
+        let popupImage = document.getElementById('popupImage');
+        let titlesHeader = document.querySelector('#titles-list h5');
+        let titlesList = document.querySelector('#titles-list ul');
+
+        button.addEventListener('click', () => {
+            popup.style.display = 'block';
+            button.style.display = 'none';
+        });
+
+        popupImage.addEventListener('click', () => {
+            popup.style.display = 'none';
+        });
+
+        titlesHeader.addEventListener('click', () => {
+            titlesList.classList.toggle('active');
+            titlesHeader.classList.toggle('active');
+        });
+
+        let time = 0;
+        (function animate() {
+            time++;
+            engine.clear();
+            engine.tick();
+            engine.render();
+            updateTargets();
+            window.requestAnimationFrame(animate);
+        })();
+
+        function updateTargets() {
+            for (let i = 0; i < targetsSize; i++) {
+                let lerp = i / (targetsSize - 1) * Math.PI * 2 + random() / 10;
+                let result = polar(lerp, time);
+                targets[i].x = result.x;
+                targets[i].y = result.y;
+                if (random() < 0.004) {
+                    let rnd1 = Math.floor(random(0, targets.length));
+                    let rnd2 = Math.floor(random(0, targets.length));
+                    [targets[rnd1], targets[rnd2]] = [targets[rnd2], targets[rnd1]];
+                }
+            }
+        }
+    </script>
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93b0c1066a737b98',t:'MTc0NjQ1MzUyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>
