@@ -10,7 +10,7 @@ body {
 body {
   color: #333;
   font-family: "Cute Font", cursive;
-  background: url('images/space.gif') no-repeat center center fixed; /* Space GIF background */
+  background: url('space.gif') no-repeat center center fixed; /* Space GIF background */
   background-size: cover; /* Ensure the GIF covers the entire viewport */
   background-color: #1a1a1a; /* Fallback color in case the GIF fails to load */
   overflow: hidden;
